@@ -11,6 +11,7 @@ async function mapScreens() {
     screenMap[String(display.id)] = {
       bounds: display.bounds,
       displayId: String(display.id),
+      source: null,
     };
 
     try {
@@ -27,12 +28,22 @@ async function mapScreens() {
       // });
 
       // fs.writeFileSync(`${display.id}.png`, img);
-
       for (const source of sources) {
-        if (String(source.display_id) === String(display.id)) {
-          screenMap[display.id].source = source;
+        if (process.platform === 'linux') {
+          const screenSize = source.thumbnail.getSize();
+          if (screenSize.width === display.size.width && screenSize.height === display.size.width && !screenMap[display.id].source) {
+            screenMap[display.id].source = source
+          }
+        } else {
+          // this is tested on windows
+          if (String(source.display_id) === String(display.id)) {
+            screenMap[display.id].source = source;
+          }
+
         }
       }
+
+
     } catch (error) {
       console.error("Failed to get screen source:", error);
     }
