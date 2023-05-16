@@ -1,25 +1,50 @@
 const fs = require("fs");
 const sharp = require("sharp");
 
-async function textFinder(screenMap, worker, whitelist) {
+async function textFinder(screenMap, worker, numOfSections = 4) {
   const wordHash = {};
 
   for (const sMap of Object.values(screenMap)) {
     const { displayId, source, bounds } = sMap;
 
-    const screenshot = await sharp(source.thumbnail.toJPEG(100)).grayscale().linear(2, -255).toBuffer();
+    const screenshot = source.thumbnail.toPNG(100);
 
-    fs.writeFileSync(`${displayId}.png`, screenshot);
+    const imgInfo = await sharp(screenshot).metadata();
 
-    const {
-      data: { text, words },
-    } = await worker.recognize(screenshot, 'eng');
+    const sectionHeight = Math.floor(imgInfo.height / numOfSections);
+    const screenShots = [];
 
-    for (const word of words) {
-      wordHash[word.text] = {
-        x: word.bbox.x0 + bounds.x,
-        y: word.bbox.y0 + 10 + bounds.y,
-      };
+    for (let i = 0; i < numOfSections; i++) {
+      const top = i * sectionHeight;
+
+      screenShots.push(
+        await sharp(screenshot)
+          .extract({
+            top,
+            left: 0,
+            width: imgInfo.width,
+            height: sectionHeight,
+          })
+          .toBuffer()
+      );
+    }
+
+    screenShots.forEach((s, i) => {
+      fs.writeFileSync(`${displayId}-${i}.png`, s);
+    });
+
+    // fs.writeFileSync(`${displayId}.png`, screenshot);
+    for (const sh of screenShots) {
+      const {
+        data: { text, words },
+      } = await worker.recognize(sh);
+
+      for (const word of words) {
+        wordHash[word.text] = {
+          x: word.bbox.x0 + bounds.x,
+          y: word.bbox.y0 + 10 + bounds.y,
+        };
+      }
     }
   }
 

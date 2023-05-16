@@ -1,5 +1,6 @@
 const { desktopCapturer, screen } = require("electron");
 const fs = require("fs");
+const screenshot = require("screenshot-desktop");
 
 async function mapScreens() {
   const screenMap = {};
@@ -21,10 +22,16 @@ async function mapScreens() {
         },
       });
 
+      // const img = await screenshot({
+      //   format: "png",
+      // });
+
+      // fs.writeFileSync(`${display.id}.png`, img);
+
       for (const source of sources) {
         if (String(source.display_id) === String(display.id)) {
           screenMap[display.id].source = source;
-        } 
+        }
       }
     } catch (error) {
       console.error("Failed to get screen source:", error);

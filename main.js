@@ -48,14 +48,14 @@ function createWindow() {
     await sleep(5000);
 
     let screenMap = await mapScreens();
-    let wordHash = await textFinder(screenMap, tesWorker, 'File');
+    let wordHash = await textFinder(screenMap, tesWorker);
     console.log("File", wordHash);
     await movementCoordinator.moveToWord(wordHash["File"] || wordHash["Fle"]);
     await movementCoordinator.click();
     await sleep(200);
 
     screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker, 'Export');
+    wordHash = await textFinder(screenMap, tesWorker);
     console.log("Export", wordHash);
     await movementCoordinator.moveToWord(
       wordHash["Export"] || wordHash["Expart"] || wordHash["Ecport"]
@@ -64,21 +64,21 @@ function createWindow() {
     await sleep(200);
 
     screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker, 'WAV');
+    wordHash = await textFinder(screenMap, tesWorker);
     console.log("WAV", wordHash);
     await movementCoordinator.moveToWord(wordHash["WAV"]);
     await movementCoordinator.click();
     await sleep(1000);
 
     screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker, 'Save');
+    wordHash = await textFinder(screenMap, tesWorker);
     console.log("Save", wordHash);
-    await movementCoordinator.moveToWord(wordHash["Save"] || wordHash["Save:"]);
+    await movementCoordinator.moveToWord(wordHash["Save"] || wordHash[""]);
     await movementCoordinator.click();
     await sleep(200);
 
     screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker, 'OK');
+    wordHash = await textFinder(screenMap, tesWorker);
     console.log("OK", wordHash);
     await movementCoordinator.moveToWord(wordHash["OK"]);
     await movementCoordinator.click();
