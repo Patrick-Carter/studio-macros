@@ -13,7 +13,7 @@ const App = () => {
     //   window.electron.send('screenshot', { img: data });
     // })
 
-    window.electron.send('screenshot', 'yep');
+    window.electron.send('doAction', { type: 'export', action: 'audacity', args: {} });
   }
 
   return (

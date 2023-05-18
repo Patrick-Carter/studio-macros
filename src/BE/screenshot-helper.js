@@ -31,7 +31,7 @@ async function mapScreens() {
       for (const source of sources) {
         if (process.platform === 'linux') {
           const screenSize = source.thumbnail.getSize();
-          if (screenSize.width === display.size.width && screenSize.height === display.size.width && !screenMap[display.id].source) {
+          if (screenSize.width === display.size.width && screenSize.height === display.size.height && !screenMap[display.id].source) {
             screenMap[display.id].source = source
           }
         } else {

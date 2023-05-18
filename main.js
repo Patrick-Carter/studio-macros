@@ -1,17 +1,20 @@
+const { app, BrowserWindow, ipcMain } = require("electron");
 const {
-  app,
-  BrowserWindow,
-  ipcMain,
-  desktopCapturer,
-  screen,
-} = require("electron");
-const { sleep, mouse } = require("@nut-tree/nut-js");
+  sleep,
+  mouse,
+  getActiveWindow,
+  getWindows,
+  Key,
+} = require("@nut-tree/nut-js");
 const { createWorker } = require("tesseract.js");
 const path = require("path");
 const fs = require("fs");
-const { mapScreens } = require("./src/scripts/screenshot-helper");
-const { textFinder } = require("./src/scripts/text-scanner");
-const { MovementCoordinator } = require("./src/scripts/movement-coordinator");
+const { mapScreens } = require("./src/BE/screenshot-helper");
+const { textFinder } = require("./src/BE/text-scanner");
+const { MovementCoordinator } = require("./src/BE/movement-coordinator");
+const { exec } = require("child_process");
+const { getActiveApplicationName } = require("./src/BE/window-info");
+const { doAction } = require("./src/BE/actions");
 
 require("electron-reload")(__dirname);
 
@@ -42,46 +45,47 @@ function createWindow() {
 
   mainWindow.loadURL(startUrl);
 
-  ipcMain.on("screenshot", async (event, args) => {
-    const movementCoordinator = new MovementCoordinator();
-    console.log("hi");
-    await sleep(5000);
+  ipcMain.on("doAction", async (event, args) => {
+    let intervalId = setInterval(async function () {
+      const actionRan = await doAction(args.type, args.action, args.args);
+      if (actionRan) {
+        clearInterval(intervalId); // stop the interval after the action has ran
+      }
+    }, 1000); // 1000 milliseconds = 1 second
 
-    let screenMap = await mapScreens();
-    let wordHash = await textFinder(screenMap, tesWorker);
-    console.log("File", wordHash);
-    await movementCoordinator.moveToWord(wordHash["File"] || wordHash["Fle"]);
-    await movementCoordinator.click();
-    await sleep(200);
+    // let screenMap = await mapScreens();
+    // let wordHash = await textFinder({screenMap, worker: tesWorker});
+    // console.log("File", wordHash);
+    // await movementCoordinator.moveToWord("File", wordHash);
+    // await movementCoordinator.click();
+    // await sleep(200);
 
-    screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker);
-    console.log("Export", wordHash);
-    await movementCoordinator.moveToWord(
-      wordHash["Export"] || wordHash["Expart"] || wordHash["Ecport"]
-    );
-    await movementCoordinator.click();
-    await sleep(200);
+    // screenMap = await mapScreens();
+    // wordHash = await textFinder({screenMap, worker: tesWorker});
+    // console.log("Export", wordHash);
+    // await movementCoordinator.moveToWord("Export", wordHash);
+    // await movementCoordinator.click();
+    // await sleep(200);
 
-    screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker);
-    console.log("WAV", wordHash);
-    await movementCoordinator.moveToWord(wordHash["WAV"]);
-    await movementCoordinator.click();
-    await sleep(1000);
+    // screenMap = await mapScreens();
+    // wordHash = await textFinder({screenMap, worker: tesWorker});
+    // console.log("Multiple", wordHash);
+    // await movementCoordinator.moveToWord("Multiple", wordHash);
+    // await movementCoordinator.click();
+    // await sleep(1000);
 
-    screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker);
-    console.log("Save", wordHash);
-    await movementCoordinator.moveToWord(wordHash["Save"] || wordHash[""]);
-    await movementCoordinator.click();
-    await sleep(200);
+    // screenMap = await mapScreens();
+    // wordHash = await textFinder({screenMap, worker: tesWorker});
+    // console.log("Save", wordHash);
+    // await movementCoordinator.moveToWord("Export", wordHash);
+    // await movementCoordinator.click();
+    // await sleep(1000);
 
-    screenMap = await mapScreens();
-    wordHash = await textFinder(screenMap, tesWorker);
-    console.log("OK", wordHash);
-    await movementCoordinator.moveToWord(wordHash["OK"]);
-    await movementCoordinator.click();
+    // screenMap = await mapScreens();
+    // wordHash = await textFinder({screenMap, worker: tesWorker});
+    // console.log("OK", wordHash);
+    // await movementCoordinator.moveToWord("oK", wordHash);
+    // await movementCoordinator.click();
   });
 }
 
@@ -92,9 +96,11 @@ app.whenReady().then(async () => {
 
   await tesWorker.loadLanguage("eng");
   await tesWorker.initialize("eng");
-  setInterval(async () => {
-    console.log(await mouse.getPosition());
-  }, 5000);
+
+  // setInterval(async () => {
+  //   console.log(await getActiveApplicationName());
+  // }, 5000)
+
   createWindow();
 });
 

@@ -1,13 +1,15 @@
 const fs = require("fs");
 const sharp = require("sharp");
 
-async function textFinder(screenMap, worker, numOfSections = 4) {
+async function textFinder({screenMap, worker, numOfSections = 1}) {
   const wordHash = {};
 
   for (const sMap of Object.values(screenMap)) {
     const { displayId, source, bounds } = sMap;
 
-    const screenshot = source.thumbnail.toPNG(100);
+    const screenshot = await sharp(source.thumbnail.toPNG(100))
+    .greyscale()
+    .toBuffer();
 
     const imgInfo = await sharp(screenshot).metadata();
 
@@ -50,7 +52,6 @@ async function textFinder(screenMap, worker, numOfSections = 4) {
 
   return wordHash;
 }
-
 module.exports = {
   textFinder,
 };
