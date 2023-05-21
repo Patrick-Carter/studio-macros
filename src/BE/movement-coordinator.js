@@ -1,7 +1,17 @@
-const { mouse, Point, Button, straightTo, sleep, keyboard, Key } = require("@nut-tree/nut-js");
+const {
+  mouse,
+  Point,
+  Button,
+  straightTo,
+  sleep,
+  keyboard,
+  Key,
+} = require("@nut-tree/nut-js");
 
 class MovementCoordinator {
-  constructor() { }
+  constructor() {
+    keyboard.config.autoDelayMs = 10;
+  }
 
   async moveToWord(word, wordHash) {
     const key = this.findLooseMatchKey(word, wordHash);
@@ -23,10 +33,19 @@ class MovementCoordinator {
     await mouse.click(Button.LEFT);
   }
 
+  async setMousePosition({ x, y }) {
+    await mouse.setPosition(new Point(x, y));
+    await sleep(100);
+  }
+
   async inputKeyboardShortcut(keys, sleepAmt = 1) {
     await keyboard.pressKey(...keys);
     await keyboard.releaseKey(...keys);
     sleep(sleepAmt);
+  }
+
+  async inputText(text) {
+    await keyboard.type(text);
   }
 
   findLooseMatchKey(searchTerm, object) {
@@ -73,10 +92,7 @@ class MovementCoordinator {
 
     return dp[m][n];
   }
-
 }
-
-
 
 module.exports = {
   MovementCoordinator,

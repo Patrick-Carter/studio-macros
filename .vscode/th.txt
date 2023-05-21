@@ -1,0 +1,10 @@
+C:\Users\Patrick\Desktop\test
+
+{ x: 1167, y: 456 }
+{ x: 1154, y: 476 }
+{ x: 1223, y: 556 }
+{ x: 1215, y: 610 }
+{ x: 1284, y: 811 } check
+{ x: 1285, y: 854 } check
+{ x: 1286, y: 878 } check
+{ x: 1422, y: 975 } check

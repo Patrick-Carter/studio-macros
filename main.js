@@ -2,21 +2,21 @@ const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const { createWorker } = require("tesseract.js");
 const path = require("path");
 const { doAction } = require("./src/BE/actions/actions-interpreter");
-const AppState = require("./src/BE/globals");
+const AutomationState = require("./src/BE/automation-state");
 require("electron-reload")(__dirname);
+const { mouse } = require("@nut-tree/nut-js");
+const { getActiveApplicationName } = require("./src/BE/window-info");
+const { AutomationCancelledException } = require("./src/BE/exceptions");
 
 let tesWorker;
-let dawFound = false;
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 850,
-    height: 620,
-    maxWidth: 850,
-    maxHeight: 620,
-    minWidth: 850,
-    minHeight: 620,
+    height: 580,
+    minWidth: 400,
+    minHeight: 500,
     webPreferences: {
       preload: path.join(__dirname, "/src/preload.js"),
       contextIsolation: true, // protect against prototype pollution
@@ -37,17 +37,20 @@ function createWindow() {
   mainWindow.loadURL(startUrl);
 
   ipcMain.on("doAction", async (event, args) => {
-    let intervalId = setInterval(async function () {
+    AutomationState.initAutomation(event, "doAction");
+    AutomationState.intervalId = setInterval(async function () {
       try {
         const actionRan = await doAction(args.action, args.args);
         if (actionRan) {
-          clearInterval(intervalId); // stop the interval after the action has ran
-          event.reply("doAction", "done");
+          AutomationState.endAutomation("done");
         }
       } catch (e) {
-        clearInterval(intervalId);
-        event.reply("doAction", "done");
-        throw e;
+        if (e instanceof AutomationCancelledException) {
+          console.log("Automation cancelled");
+        } else {
+          AutomationState.endAutomation("error");
+          throw e;
+        }
       }
     }, 1000); // 1000 milliseconds = 1 second
 
@@ -70,12 +73,24 @@ app.whenReady().then(async () => {
 
   // Register a 'Alt+Shift+Q' shortcut listener.
   const ret = globalShortcut.register("Alt+Shift+Q", () => {
-    AppState.setAutomationIsRunning(false);
+    console.log("Alt+Shift+Q is pressed");
+    if (AutomationState.event) {
+      AutomationState.endAutomation("cancelled");
+    }
   });
 
   if (!ret) {
     console.log("registration failed");
   }
+
+  // setInterval(async function () {
+  // const pos = await mouse.getPosition();
+  // const appName = await getActiveApplicationName();
+  // const sig = AutomationState.getAutomationIsRunning();
+  // console.log(pos);
+  // console.log(appName);
+  // console.log(sig);
+  // }, 1000);
 
   createWindow();
 });

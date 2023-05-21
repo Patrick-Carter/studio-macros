@@ -1,6 +1,6 @@
 const { Key } = require("@nut-tree/nut-js");
 
-const allDaws = ["audacity", "proTools"];
+const allDaws = ["Audacity", "ProTools", "FLStudio"];
 const allPlatforms = ["win32", "linux", "mac"];
 
 const allKeys = Object.values(Key);
@@ -30,6 +30,11 @@ actionTypes.initExport = {
   proTools: {
     win32: [Key.LeftShift, Key.LeftControl, Key.L],
     linux: [Key.LeftShift, Key.LeftControl, Key.L],
+    mac: [],
+  },
+  FLStudio: {
+    win32: [Key.LeftControl, Key.R],
+    linux: [Key.LeftControl, Key.R],
     mac: [],
   },
 };
