@@ -47,6 +47,7 @@ function createWindow() {
       } catch (e) {
         if (e instanceof AutomationCancelledException) {
           console.log("Automation cancelled");
+          AutomationState.endAutomation("cancelled");
         } else {
           AutomationState.endAutomation("error");
           throw e;
