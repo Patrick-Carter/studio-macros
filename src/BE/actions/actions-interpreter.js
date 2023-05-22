@@ -4,6 +4,7 @@ const { getActionDefinition } = require("./action-definitions");
 const AutomationState = require("../automation-state");
 const { sleep } = require("@nut-tree/nut-js");
 const { AutomationCancelledException } = require("../exceptions");
+const { ScreenChecker } = require("../screen-checker");
 
 async function doAction(action, args) {
   const isAutomationRunning = AutomationState.getAutomationIsRunning();
@@ -15,65 +16,67 @@ async function doAction(action, args) {
     console.log("automation not in progress");
   }
 
-  let automationRan = false;
-  switch (action) {
-    case "exportAudacity":
-      automationRan = await exportAudacity(args);
-      break;
-    case "exportFLStudio":
-      automationRan = await exportFLStudio(args);
-      break;
-  }
+  const automationRan = await exportFromDaw(args, action);
+
   return automationRan;
 }
 
-async function exportAudacity(args) {
-  const appName = await getActiveApplicationName();
+const dawMapper = {
+  exportAudacity: "audacity",
+  exportFLStudio: "fl studio",
+};
 
-  if (appName?.toLowerCase().includes("audacity")) {
-    AutomationState.startAutomation();
-    const movementCoordinator = new MovementCoordinator();
-    const instructions = getActionDefinition("exportAudacity", "Audacity", args);
+async function exportFromDaw(args, action) {
+  {
+    let appName = await getActiveApplicationName();
 
-    for (const instruction of instructions) {
-      // const run = AutomationState.getAutomationIsRunning();
-      // console.log('is running', run);
-      // if (run) {
-      //   return false
-      // }
-      await movementCoordinator[instruction.fn](instruction.args);
-      //await sleep(5000);
-    }
+    if (appName?.toLowerCase().includes(dawMapper[action])) {
+      AutomationState.startAutomation();
+      const controllers = {
+        movementCoordinator: new MovementCoordinator(),
+        screenChecker: new ScreenChecker(),
+      };
 
-    return true;
-  }
+      const instructions = getActionDefinition(
+        action,
+        action.replace("export", ""),
+        args
+      );
 
-  return false;
-}
+      let shouldDoAction = null;
+      for (const instruction of instructions) {
+        for (let i = 0; i < instruction.repeat; i++) {
+          // checks for if we need to continue automation
+          const automationRunning = AutomationState.getAutomationIsRunning();
+          appName = await getActiveApplicationName();
+          const correctWindowStillActive = appName
+            ?.toLowerCase()
+            .includes(dawMapper[action]);
+          if (!automationRunning || !correctWindowStillActive) {
+            throw new AutomationCancelledException("Automation was cancelled");
+          }
 
-async function exportFLStudio(args) {
-  const appName = await getActiveApplicationName();
+          // if the prev action was a 'screenChecker' shouldDoAction will be true or false
+          if (
+            shouldDoAction === false &&
+            instruction.controller === "movementCoordinator"
+          ) {
+            shouldDoAction = null;
+            continue;
+          }
 
-  if (appName?.toLowerCase().includes("fl studio")) {
-    AutomationState.startAutomation();
-    const movementCoordinator = new MovementCoordinator();
-    const instructions = getActionDefinition("exportFLStudio", "FLStudio", args);
-
-    for (const instruction of instructions) {
-      for (let i = 0; i < instruction.repeat; i++) {
-        const run = AutomationState.getAutomationIsRunning();
-        if (!run) {
-          throw new AutomationCancelledException("Automation was cancelled");
+          shouldDoAction = await controllers[instruction.controller][
+            instruction.fn
+          ](instruction.args);
+          await sleep(1000);
         }
-        await movementCoordinator[instruction.fn](instruction.args);
-        await sleep(1000);
       }
+
+      return true;
     }
 
-    return true;
+    return false;
   }
-
-  return false;
 }
 
 module.exports = {

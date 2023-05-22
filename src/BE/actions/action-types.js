@@ -22,12 +22,12 @@ keyNames.forEach((keyName) => {
 });
 
 actionTypes.initExport = {
-  audacity: {
+  Audacity: {
     win32: [Key.LeftShift, Key.LeftControl, Key.L],
     linux: [Key.LeftShift, Key.LeftControl, Key.L],
     mac: [],
   },
-  proTools: {
+  ProTools: {
     win32: [Key.LeftShift, Key.LeftControl, Key.L],
     linux: [Key.LeftShift, Key.LeftControl, Key.L],
     mac: [],

@@ -1,6 +1,5 @@
 const { desktopCapturer, screen } = require("electron");
 const fs = require("fs");
-const screenshot = require("screenshot-desktop");
 
 async function mapScreens() {
   const screenMap = {};
