@@ -7,16 +7,10 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import {
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
   createTheme,
   ThemeProvider,
   CssBaseline,
   Box,
-  TextField,
   Tabs,
   Tab,
   Backdrop,
@@ -70,12 +64,14 @@ const App = () => {
                 onChange={(e, newValue) => setTab(newValue)}
                 centered
               >
-                <Tab value={"Export"} label="Export" />
-                <Tab value={"Custom Macros"} label="Custom Macros" />
-                <Tab value={"Settings"} label="Settings" />
+                <Tab value="Export" label="Export" />
+                <Tab value="Custom Macros" label="Custom Macros" />
+                <Tab value="Process" label="Process" />
+                <Tab value="Settings" label="Settings" />
               </Tabs>
               {tab === "Export" && <ExportWindow setIsLoading={setIsLoading} />}
               {tab === "Custom Macros" && <div>Custom Macros</div>}
+              {tab === "Process" && <div>Process</div>}
               {tab === "Settings" && <div>Settings</div>}
             </Grid>
           </Box>

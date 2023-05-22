@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const { createWorker } = require("tesseract.js");
 const path = require("path");
-const { doAction } = require("./src/BE/actions/actions-interpreter");
+const { doAction } = require("./src/BE/actions/macro-interpreter");
 const AutomationState = require("./src/BE/automation-state");
 require("electron-reload")(__dirname);
 const { mouse } = require("@nut-tree/nut-js");
@@ -15,7 +15,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 850,
     height: 580,
-    minWidth: 400,
+    minWidth: 460,
     minHeight: 500,
     webPreferences: {
       preload: path.join(__dirname, "/src/preload.js"),

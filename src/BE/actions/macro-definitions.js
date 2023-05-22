@@ -1,6 +1,6 @@
 const { actionTypes } = require("./action-types");
 
-function getActionDefinition(action, daw, { exportDestination }) {
+function getMacroDefinition(action, daw, { exportDestination }) {
   const actionDefinitions = {
     exportAudacity: [
       {
@@ -75,6 +75,7 @@ function getActionDefinition(action, daw, { exportDestination }) {
         args: null,
         repeat: 1,
         controller: "screenChecker",
+        outcomeIfFalse: 'skip'
       },
       {
         fn: "click",
@@ -89,5 +90,5 @@ function getActionDefinition(action, daw, { exportDestination }) {
 }
 
 module.exports = {
-  getActionDefinition,
+  getMacroDefinition,
 };

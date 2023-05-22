@@ -1,10 +1,12 @@
-const { MovementCoordinator } = require("../movement-coordinator");
+const {
+  MovementCoordinator,
+} = require("../action-controllers/movement-coordinator");
 const { getActiveApplicationName } = require("../window-info");
-const { getActionDefinition } = require("./action-definitions");
+const { getMacroDefinition } = require("./macro-definitions");
 const AutomationState = require("../automation-state");
 const { sleep } = require("@nut-tree/nut-js");
 const { AutomationCancelledException } = require("../exceptions");
-const { ScreenChecker } = require("../screen-checker");
+const { ScreenChecker } = require("../action-controllers/screen-checker");
 
 async function doAction(action, args) {
   const isAutomationRunning = AutomationState.getAutomationIsRunning();
@@ -37,7 +39,7 @@ async function exportFromDaw(args, action) {
         screenChecker: new ScreenChecker(),
       };
 
-      const instructions = getActionDefinition(
+      const instructions = getMacroDefinition(
         action,
         action.replace("export", ""),
         args
@@ -62,7 +64,17 @@ async function exportFromDaw(args, action) {
             instruction.controller === "movementCoordinator"
           ) {
             shouldDoAction = null;
-            continue;
+            if (instruction.outcomeIsFalse === "skip") {
+              continue;
+            } else if (instruction.outcomeIsFalse === "cancel") {
+              throw new AutomationCancelledException(
+                "Automation was cancelled"
+              );
+            } else {
+              throw new Error(
+                `Unknown outcomeIsFalse value: ${instruction.outcomeIsFalse}`
+              );
+            }
           }
 
           shouldDoAction = await controllers[instruction.controller][

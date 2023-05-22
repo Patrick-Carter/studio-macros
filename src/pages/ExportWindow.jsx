@@ -46,7 +46,7 @@ function ExportWindow({ setIsLoading }) {
   };
   return (
     <>
-      <Typography variant="h6">Export Options</Typography>
+      <Typography variant="h6">Select Options</Typography>
 
       <FormControl sx={{ minWidth: "20em" }}>
         <InputLabel id="daw-select-label">Daw</InputLabel>
