@@ -1,13 +1,26 @@
 const fs = require("fs");
 const sharp = require("sharp");
 const { desktopCapturer, screen } = require("electron");
-
+const { createWorker } = require("tesseract.js");
 class ScreenChecker {
   constructor() {
     this.screenMap = null;
     this.wordHash = null;
+    this.worker = null;
   }
 
+  async setupWorker() {
+    if (this.worker !== null) {
+      return;
+    }
+
+    this.worker = await createWorker({
+      //logger: (m) => console.log(m),
+    });
+
+    await worker.loadLanguage("eng");
+    await worker.initialize("eng");
+  }
   async mapScreens() {
     this.screenMap = {};
 
@@ -33,7 +46,7 @@ class ScreenChecker {
         //   format: "png",
         // });
 
-        // fs.writeFileSync(`${display.id}.png`, img);
+         fs.writeFileSync(`${display.id}.png`, img);
         for (const source of sources) {
           if (process.platform === "linux") {
             const screenSize = source.thumbnail.getSize();
@@ -59,10 +72,11 @@ class ScreenChecker {
     await Promise.all(promises);
   }
 
-  async textFinder({ screenMap, worker, numOfSections = 1 }) {
+  async textFinder({ numOfSections = 1 }) {
+    await this.setupWorker();
     this.wordHash = {};
 
-    for (const sMap of Object.values(screenMap)) {
+    for (const sMap of Object.values(this.screenMap)) {
       const { displayId, source, bounds } = sMap;
 
       const screenshot = await sharp(source.thumbnail.toPNG(100))
@@ -97,7 +111,7 @@ class ScreenChecker {
       for (const sh of screenShots) {
         const {
           data: { text, words },
-        } = await worker.recognize(sh);
+        } = await this.worker.recognize(sh);
 
         for (const word of words) {
           this.wordHash[word.text] = {
@@ -109,12 +123,15 @@ class ScreenChecker {
     }
   }
 
-  async checkColorAtPixel() {
-    return true;
-  }
+  async checkColorAtPixel({ keepCurrentScreenData = false }) {
+    if (!keepCurrentScreenData || !this.screenMap) {
+      await this.mapScreens();
+    }
+    
 
+  }
 }
 
 module.exports = {
   ScreenChecker,
-}
+};

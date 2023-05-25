@@ -8,7 +8,6 @@ const { mouse } = require("@nut-tree/nut-js");
 const { getActiveApplicationName } = require("./src/BE/window-info");
 const { AutomationCancelledException } = require("./src/BE/exceptions");
 
-let tesWorker;
 let mainWindow;
 
 function createWindow() {
@@ -65,13 +64,6 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  tesWorker = await createWorker({
-    //logger: (m) => console.log(m),
-  });
-
-  await tesWorker.loadLanguage("eng");
-  await tesWorker.initialize("eng");
-
   // Register a 'Alt+Shift+Q' shortcut listener.
   const ret = globalShortcut.register("Alt+Shift+Q", () => {
     console.log("Alt+Shift+Q is pressed");
@@ -84,14 +76,14 @@ app.whenReady().then(async () => {
     console.log("registration failed");
   }
 
-  // setInterval(async function () {
-  // const pos = await mouse.getPosition();
-  // const appName = await getActiveApplicationName();
-  // const sig = AutomationState.getAutomationIsRunning();
-  // console.log(pos);
-  // console.log(appName);
-  // console.log(sig);
-  // }, 1000);
+  setInterval(async function () {
+  const pos = await mouse.getPosition();
+  const appName = await getActiveApplicationName();
+  const sig = AutomationState.getAutomationIsRunning();
+  console.log(pos);
+  //console.log(appName);
+  //console.log(sig);
+  }, 1000);
 
   createWindow();
 });
