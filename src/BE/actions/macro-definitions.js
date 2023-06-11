@@ -37,7 +37,7 @@ function getMacroDefinition(action, daw, { exportDestination }) {
       },
       {
         fn: "inputText",
-        args: { text: 'C:\\Users\\Patrick Carter\\Desktop\\test' }, // exportDestination,
+        args: { text: exportDestination },
         repeat: 1,
         controller: "movementCoordinator",
       },
@@ -118,7 +118,7 @@ function getMacroDefinition(action, daw, { exportDestination }) {
         args: { keepCurrentScreenData: false, expectedColor: [239, 133, 96] },
         repeat: 1,
         controller: "screenChecker",
-        outcomeIfFalse: 'skip'
+        outcomeIfFalse: "skip",
       },
       {
         fn: "click",
@@ -137,7 +137,7 @@ function getMacroDefinition(action, daw, { exportDestination }) {
         args: { keepCurrentScreenData: true, expectedColor: [239, 133, 96] },
         repeat: 1,
         controller: "screenChecker",
-        outcomeIfFalse: 'skip'
+        outcomeIfFalse: "skip",
       },
       {
         fn: "click",
@@ -156,7 +156,7 @@ function getMacroDefinition(action, daw, { exportDestination }) {
         args: { keepCurrentScreenData: true, expectedColor: [86, 93, 96] },
         repeat: 1,
         controller: "screenChecker",
-        outcomeIfFalse: 'skip'
+        outcomeIfFalse: "skip",
       },
       {
         fn: "click",

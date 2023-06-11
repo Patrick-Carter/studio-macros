@@ -70,8 +70,8 @@ const App = () => {
                 <Tab value="Settings" label="Settings" />
               </Tabs>
               {tab === "Export" && <ExportWindow setIsLoading={setIsLoading} />}
-              {tab === "Custom Macros" && <div>Custom Macros</div>}
-              {tab === "Process" && <div>Process</div>}
+              {tab === "Custom Macros" && <div>Custom Macros is not available in this preview</div>}
+              {tab === "Process" && <div>Processing suite is not available in this preview</div>}
               {tab === "Settings" && <div>Settings</div>}
             </Grid>
           </Box>

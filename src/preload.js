@@ -1,18 +1,20 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld('electron', {
+const sharedChannels = ["doAction", "selectDirectory"];
+
+contextBridge.exposeInMainWorld("electron", {
   send: (channel, data) => {
     // whitelist channels
-    let validChannels = ['doAction'];
+    let validChannels = [...sharedChannels];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
   },
   receive: (channel, func) => {
-    let validChannels = ['doAction'];
+    let validChannels = [...sharedChannels];
     if (validChannels.includes(channel)) {
-      // Deliberately strip event as it includes `sender` 
+      // Deliberately strip event as it includes `sender`
       ipcRenderer.on(channel, (event, ...args) => func(...args));
     }
-  }
+  },
 });

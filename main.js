@@ -1,4 +1,10 @@
-const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  globalShortcut,
+  dialog,
+} = require("electron");
 const { createWorker } = require("tesseract.js");
 const path = require("path");
 const { doAction } = require("./src/BE/actions/macro-interpreter");
@@ -36,6 +42,7 @@ function createWindow() {
   mainWindow.loadURL(startUrl);
 
   ipcMain.on("doAction", async (event, args) => {
+    console.log(args);
     AutomationState.initAutomation(event, "doAction");
     AutomationState.intervalId = setInterval(async function () {
       try {
@@ -53,13 +60,14 @@ function createWindow() {
         }
       }
     }, 1000); // 1000 milliseconds = 1 second
+  });
 
-    // let screenMap = await mapScreens();
-    // let wordHash = await textFinder({screenMap, worker: tesWorker});
-    // console.log("File", wordHash);
-    // await movementCoordinator.moveToWord("File", wordHash);
-    // await movementCoordinator.click();
-    // await sleep(200);
+  ipcMain.on("selectDirectory", async (event, args) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ["openDirectory"],
+    });
+
+    event.reply("selectDirectory", result.filePaths[0]);
   });
 }
 
@@ -77,12 +85,12 @@ app.whenReady().then(async () => {
   }
 
   setInterval(async function () {
-  const pos = await mouse.getPosition();
-  const appName = await getActiveApplicationName();
-  const sig = AutomationState.getAutomationIsRunning();
-  console.log(pos.x / 2560, pos.y / 1440);
-  //console.log(appName);
-  //console.log(sig);
+    // const pos = await mouse.getPosition();
+    // const appName = await getActiveApplicationName();
+    // const sig = AutomationState.getAutomationIsRunning();
+    // console.log(pos.x / 2560, pos.y / 1440);
+    //console.log(appName);
+    //console.log(sig);
   }, 1000);
 
   createWindow();

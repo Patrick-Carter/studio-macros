@@ -31,9 +31,10 @@ function ExportWindow({ setIsLoading }) {
     setIsLoading(false);
   });
 
-  const handleDestinationChange = (e) => {
-    setDestination("C:\\Users\\Patrick\\Desktop\\test");
-  };
+  window.electron.receive("selectDirectory", (data) => {
+    setIsLoading(false);
+    setDestination(data);
+  });
 
   const automatePos = () => {
     setIsLoading(true);
@@ -41,8 +42,13 @@ function ExportWindow({ setIsLoading }) {
 
     window.electron.send("doAction", {
       action: `export${dawWithNoSpaces}`,
-      args: {},
+      args: { exportDestination: destination },
     });
+  };
+
+  const handleDestinationChange = () => {
+    setIsLoading(true);
+    window.electron.send("selectDirectory", {});
   };
   return (
     <>
