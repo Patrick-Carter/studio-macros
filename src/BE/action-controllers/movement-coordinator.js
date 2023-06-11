@@ -1,10 +1,4 @@
-const {
-  mouse,
-  Point,
-  Button,
-  keyboard,
-  screen,
-} = require("@nut-tree/nut-js");
+const { mouse, Point, Button, keyboard, screen } = require("@nut-tree/nut-js");
 
 class MovementCoordinator {
   constructor() {
@@ -49,9 +43,7 @@ class MovementCoordinator {
     await keyboard.type(text);
   }
 
-  handleBooleanLogic() {
-
-  }
+  handleBooleanLogic() {}
 
   findLooseMatchKey(searchTerm, object) {
     const keys = Object.keys(object);

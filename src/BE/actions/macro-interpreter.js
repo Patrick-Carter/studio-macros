@@ -1,17 +1,16 @@
-const {
-  MovementCoordinator,
-} = require("../action-controllers/movement-coordinator");
+const { MovementCoordinator } = require("../action-controllers/movement-coordinator");
 const { getActiveApplicationName } = require("../window-info");
 const { getMacroDefinition } = require("./macro-definitions");
 const AutomationState = require("../automation-state");
 const { sleep } = require("@nut-tree/nut-js");
 const { AutomationCancelledException } = require("../exceptions");
 const { ScreenChecker } = require("../action-controllers/screen-checker");
+const { StepMessenger } = require("../action-controllers/step-messenger");
 
 async function doAction(action, args) {
-  const isAutomationRunning = AutomationState.getAutomationIsRunning();
+  const automationRunning = AutomationState.getAutomationIsRunning();
 
-  if (isAutomationRunning) {
+  if (automationRunning) {
     console.log("automation already in progress");
     return;
   } else {
@@ -30,69 +29,95 @@ const dawMapper = {
 
 async function exportFromDaw(args, action) {
   {
-    let appName = await getActiveApplicationName();
+    const targetApplicationIsFocused = await checkIfTargetApplicationIsFocus();
 
-    if (appName?.toLowerCase().includes(dawMapper[action])) {
-      AutomationState.startAutomation();
-      const controllers = {
-        movementCoordinator: new MovementCoordinator(),
-        screenChecker: new ScreenChecker(),
-      };
+    if (targetApplicationIsFocused) {
+      const instructions = getMacroDefinition(action, action.replace("export", ""), args);
 
-      const instructions = getMacroDefinition(
-        action,
-        action.replace("export", ""),
-        args
-      );
-
-      let shouldDoAction = null;
-      let prevInstruction = null;
-      for (const instruction of instructions) {
-        for (let i = 0; i < instruction.repeat; i++) {
-          // checks for if we need to continue automation
-          const automationRunning = AutomationState.getAutomationIsRunning();
-          appName = await getActiveApplicationName();
-          const correctWindowStillActive = appName
-            ?.toLowerCase()
-            .includes(dawMapper[action]);
-          if (!automationRunning || !correctWindowStillActive) {
-            throw new AutomationCancelledException("Automation was cancelled");
-          }
-
-          // if the prev action was a 'screenChecker' shouldDoAction will be true or false
-          if (
-            shouldDoAction === false && prevInstruction
-          ) {
-            shouldDoAction = null;
-            if (prevInstruction.outcomeIfFalse === "skip") {
-              continue;
-            } else if (prevInstruction.outcomeIfFalse === "cancel") {
-              throw new AutomationCancelledException(
-                "Automation was cancelled"
-              );
-            } else {
-              throw new Error(
-                `Unknown outcomeIfFalse value: ${prevInstruction.outcomeIfFalse}`
-              );
-            }
-          }
-
-          shouldDoAction = await controllers[instruction.controller][
-            instruction.fn
-          ](instruction.args);
-
-          prevInstruction = instruction;
-          await sleep(1000);
-        }
-      }
-
-      return true;
+      AutomationState.startAutomation(instructions);
+      return runInstructions(instructions);
     }
 
     return false;
   }
 }
 
+async function continueAutomation(intervalId) {
+  const targetApplicationIsFocused = await checkIfTargetApplicationIsFocus();
+
+  if (targetApplicationIsFocused) {
+    clearInterval(intervalId);
+    return runInstructions();
+  }
+
+  return false;
+}
+
+async function checkIfTargetApplicationIsFocus() {
+  let appName = await getActiveApplicationName();
+
+  if (appName?.toLowerCase().includes(dawMapper[AutomationState.action])) {
+    return true;
+  }
+
+  return false;
+}
+
+async function runInstructions() {
+  const controllers = {
+    movementCoordinator: new MovementCoordinator(),
+    screenChecker: new ScreenChecker(),
+    stepMessenger: new StepMessenger(),
+  };
+
+  let shouldDoAction = null;
+  let prevInstruction = null;
+  for (let i = AutomationState.currentStep; i < AutomationState.instructions.length; i++) {
+    let instruction = AutomationState.instructions[i];
+
+    for (let j = 0; j < instruction.repeat; j++) {
+      // checks for if we need to continue automation
+      const automationRunning = AutomationState.getAutomationIsRunning();
+      appName = await getActiveApplicationName();
+
+      const correctWindowStillActive = appName?.toLowerCase().includes(dawMapper[AutomationState.action]);
+
+      // if the instruction is a message, display that and wait for return
+      if (instruction.controller === "stepMessenger") {
+        await controllers[instruction.controller][instruction.fn](instruction.args);
+        AutomationState.currentStep++;
+        return true;
+      }
+
+      if (!automationRunning || !correctWindowStillActive) {
+        throw new AutomationCancelledException("Automation was cancelled");
+      }
+
+      // if the prev action was a 'screenChecker' shouldDoAction will be true or false
+      if (shouldDoAction === false && prevInstruction) {
+        shouldDoAction = null;
+        if (prevInstruction.outcomeIfFalse === "skip") {
+          continue;
+        } else if (prevInstruction.outcomeIfFalse === "cancel") {
+          throw new AutomationCancelledException("Automation was cancelled");
+        } else {
+          throw new Error(`Unknown outcomeIfFalse value: ${prevInstruction.outcomeIfFalse}`);
+        }
+      }
+
+      shouldDoAction = await controllers[instruction.controller][instruction.fn](instruction.args);
+
+      prevInstruction = instruction;
+      AutomationState.currentStep++;
+      await sleep(1000);
+    }
+  }
+
+  AutomationState.endAutomation("done");
+  return true;
+}
+
 module.exports = {
   doAction,
+  continueAutomation,
 };

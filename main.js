@@ -1,13 +1,7 @@
-const {
-  app,
-  BrowserWindow,
-  ipcMain,
-  globalShortcut,
-  dialog,
-} = require("electron");
+const { app, BrowserWindow, ipcMain, globalShortcut, dialog } = require("electron");
 const { createWorker } = require("tesseract.js");
 const path = require("path");
-const { doAction } = require("./src/BE/actions/macro-interpreter");
+const { doAction, continueAutomation } = require("./src/BE/actions/macro-interpreter");
 const AutomationState = require("./src/BE/automation-state");
 require("electron-reload")(__dirname);
 const { mouse } = require("@nut-tree/nut-js");
@@ -42,14 +36,10 @@ function createWindow() {
   mainWindow.loadURL(startUrl);
 
   ipcMain.on("doAction", async (event, args) => {
-    console.log(args);
-    AutomationState.initAutomation(event, "doAction");
+    AutomationState.initAutomation(event, "doAction", args.action);
     AutomationState.intervalId = setInterval(async function () {
       try {
-        const actionRan = await doAction(args.action, args.args);
-        if (actionRan) {
-          AutomationState.endAutomation("done");
-        }
+        await doAction(args.action, args.args);
       } catch (e) {
         if (e instanceof AutomationCancelledException) {
           console.log("Automation cancelled");
@@ -60,6 +50,22 @@ function createWindow() {
         }
       }
     }, 1000); // 1000 milliseconds = 1 second
+  });
+
+  ipcMain.on("continueAutomation", async (event, args) => {
+    const intervalId = setInterval(async function () {
+      try {
+        await continueAutomation(intervalId);
+      } catch (e) {
+        if (e instanceof AutomationCancelledException) {
+          console.log("Automation cancelled");
+          AutomationState.endAutomation("cancelled");
+        } else {
+          AutomationState.endAutomation("error");
+          throw e;
+        }
+      }
+    }, 1000);
   });
 
   ipcMain.on("selectDirectory", async (event, args) => {

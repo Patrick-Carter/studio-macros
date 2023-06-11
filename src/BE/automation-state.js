@@ -1,26 +1,30 @@
 class AutomationState {
   constructor(event, ipcName) {
     this.signal = new AbortController();
-    this.automationIsRunning = false;
     this.intervalId = null;
     this.event = null;
     this.ipcName = null;
+    this.currentStep = 0;
+    this.instructions = null;
+    this.action = null;
   }
 
   abortAutomation() {
     this.signal.abort();
-    this.automationIsRunning = false;
+    this.instructions = null;
   }
 
-  initAutomation(event, ipcName) {
+  initAutomation(event, ipcName, action) {
     this.signal = new AbortController();
     this.event = event;
     this.ipcName = ipcName;
+    this.action = action;
   }
 
-  startAutomation() {
+  startAutomation(instructions, action) {
     clearInterval(this.intervalId);
-    this.automationIsRunning = true;
+    this.instructions = instructions;
+    this.currentStep = 0;
   }
 
   endAutomation(message) {
@@ -30,11 +34,12 @@ class AutomationState {
     this.event = null;
     this.ipcName = null;
     this.intervalId = null;
-    this.automationIsRunning = false;
+    this.instructions = null;
+    this.action = null;
   }
 
   getAutomationIsRunning() {
-    return this.automationIsRunning;
+    return !!this.instructions;
   }
 }
 
