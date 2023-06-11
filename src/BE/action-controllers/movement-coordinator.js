@@ -3,6 +3,7 @@ const {
   Point,
   Button,
   keyboard,
+  screen,
 } = require("@nut-tree/nut-js");
 
 class MovementCoordinator {
@@ -30,7 +31,13 @@ class MovementCoordinator {
   }
 
   async setMousePosition({ x, y }) {
-    await mouse.setPosition(new Point(x, y));
+    const screenWidth = await screen.width();
+    const screenHeight = await screen.height();
+
+    const trueX = screenWidth * x;
+    const trueY = screenHeight * y;
+
+    await mouse.setPosition(new Point(trueX, trueY));
   }
 
   async inputKeyboardShortcut({ keys }) {

@@ -46,6 +46,7 @@ async function exportFromDaw(args, action) {
       );
 
       let shouldDoAction = null;
+      let prevInstruction = null;
       for (const instruction of instructions) {
         for (let i = 0; i < instruction.repeat; i++) {
           // checks for if we need to continue automation
@@ -60,19 +61,18 @@ async function exportFromDaw(args, action) {
 
           // if the prev action was a 'screenChecker' shouldDoAction will be true or false
           if (
-            shouldDoAction === false &&
-            instruction.controller === "movementCoordinator"
+            shouldDoAction === false && prevInstruction
           ) {
             shouldDoAction = null;
-            if (instruction.outcomeIsFalse === "skip") {
+            if (prevInstruction.outcomeIfFalse === "skip") {
               continue;
-            } else if (instruction.outcomeIsFalse === "cancel") {
+            } else if (prevInstruction.outcomeIfFalse === "cancel") {
               throw new AutomationCancelledException(
                 "Automation was cancelled"
               );
             } else {
               throw new Error(
-                `Unknown outcomeIsFalse value: ${instruction.outcomeIsFalse}`
+                `Unknown outcomeIfFalse value: ${prevInstruction.outcomeIfFalse}`
               );
             }
           }
@@ -80,6 +80,8 @@ async function exportFromDaw(args, action) {
           shouldDoAction = await controllers[instruction.controller][
             instruction.fn
           ](instruction.args);
+
+          prevInstruction = instruction;
           await sleep(1000);
         }
       }
