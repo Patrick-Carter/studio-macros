@@ -92,10 +92,10 @@ app.whenReady().then(async () => {
 
   setInterval(async function () {
     // const pos = await mouse.getPosition();
-    // const appName = await getActiveApplicationName();
+    const appName = await getActiveApplicationName();
     // const sig = AutomationState.getAutomationIsRunning();
     // console.log(pos.x / 2560, pos.y / 1440);
-    //console.log(appName);
+    console.log(appName);
     //console.log(sig);
   }, 1000);
 

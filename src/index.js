@@ -36,7 +36,7 @@ const App = () => {
       <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
         <Grid container direction="column" alignContent="center" alignItems="center" gap={5}>
           <CircularProgress color="inherit" />
-          <Typography variant="button">"ALT + CTRL + Q" to cancel</Typography>
+          <Typography variant="button">"ALT + SHIFT + Q" to cancel</Typography>
           {stepMessage && (
             <Grid container direction="column" alignContent="center" alignItems="center">
               <Typography variant="button">{stepMessage}</Typography>

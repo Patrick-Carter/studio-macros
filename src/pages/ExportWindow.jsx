@@ -14,12 +14,12 @@ import {
 const daws = [
   "FL Studio",
   "Audacity",
-  "Ableton Live",
-  "Pro Tools",
-  "Logic Pro",
-  "GarageBand",
-  "Reaper",
   "Studio One",
+  "Logic Pro",
+  "Pro Tools",
+  "GarageBand",
+  "Ableton Live",
+  "Reaper",
   "Cubase",
 ];
 

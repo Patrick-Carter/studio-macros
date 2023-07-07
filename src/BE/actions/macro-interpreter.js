@@ -25,6 +25,7 @@ async function doAction(action, args) {
 const dawMapper = {
   exportAudacity: "audacity",
   exportFLStudio: "fl studio",
+  exportStudioOne: 'studio one'
 };
 
 async function exportFromDaw(args, action) {
